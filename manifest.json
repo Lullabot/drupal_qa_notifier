@@ -1,0 +1,31 @@
+{
+  "manifest_version": 2,
+  "name": "Drupal QA",
+  "version": "1.0.0",
+  "description": "Provides alerts for Drupal QA tests",
+  "author": "justafish",
+
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://drupal.org/node/*"],
+      "js": ["content.js"]
+    }
+  ],
+
+  "icons": {"16": "16.png", "48": "48.png", "128": "128.png"},
+  "web_accessible_resources": [
+    "48.png"
+  ],
+
+  "permissions": [
+    "alarms",
+    "notifications",
+    "storage",
+    "https://qa.drupal.org/"
+  ]
+}
