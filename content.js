@@ -1,7 +1,11 @@
 var addButton = function (files, index, testID) {
   var btn = document.createElement("button")
   chrome.storage.sync.get("subscriptions", function (item) {
-    if (item.subscriptions[testID] !== testID) {
+    if (typeof item.subscriptions === "undefined") {
+      item.subscriptions = {};
+    }
+
+    if (item.subscriptions[testID] === "undefined" || item.subscriptions[testID] !== testID) {
       var t = document.createTextNode("Subscribe");
       btn.appendChild(t);
     }
