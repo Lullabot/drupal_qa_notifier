@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "Drupal QA",
+  "name": "Drupal QA Notifier",
   "version": "0.0.1",
   "description": "Provides alerts for Drupal QA tests",
   "author": "justafish",
