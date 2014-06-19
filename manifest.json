@@ -12,7 +12,7 @@
 
   "content_scripts": [
     {
-      "matches": ["https://drupal.org/node/*"],
+      "matches": ["https://www.drupal.org/node/*"],
       "js": ["content.js"]
     }
   ],
