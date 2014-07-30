@@ -29,6 +29,7 @@ var addButton = function (files, index, testID) {
   files[index].appendChild(btn);
 };
 
+// drupal.org Issues
 var files = document.querySelectorAll('div.pift-operations');
 for (var i = 0; i < files.length; i++) {
   var operationLinks = files[i].getElementsByTagName('a');
@@ -39,4 +40,12 @@ for (var i = 0; i < files.length; i++) {
       break;
     }
   }
+}
+
+// qa.drupal.org test page
+var files = document.querySelectorAll('#pifr-status');
+if (files.length > 0) {
+  var pathArray = window.location.pathname.split( '/' );
+  var testID = pathArray[pathArray.length - 1];
+  addButton(files, 0, testID);
 }
