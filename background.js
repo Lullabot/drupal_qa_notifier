@@ -26,7 +26,7 @@ function onWatchdog() {
             subscriptions.push((prop));
           }
         }
-
+console.log(subscriptions);
         if (subscriptions.length > 0) {
           var tests = subscriptions.join('+');
           var xhr = new XMLHttpRequest();
@@ -49,7 +49,11 @@ function onWatchdog() {
                         }
                         else if (Notification.permission === "granted") {
                           // If it's okay let's create a notification
+                          console.log('granted line 52');
                           showResultNotification(test);
+                          console.log('about to sendToPushbullet');
+                          sendToPushbullet(test);
+                          console.log('sent!');
                         }
                         else if (Notification.permission !== 'denied') {
                           Notification.requestPermission(function (permission) {
@@ -60,7 +64,9 @@ function onWatchdog() {
                             }
 
                             if (permission === "granted") {
+                              console.log('granted line 65');
                               showResultNotification(test);
+                              sendToPushbullet(test);
                             }
                           });
                         }
@@ -69,7 +75,9 @@ function onWatchdog() {
                   }
                 }
               }
-              catch(e) {}
+              catch(e) {
+                console.log(e);
+              }
               finally {
                 chrome.storage.sync.set({subscriptions: item.subscriptions});
               }
@@ -95,5 +103,24 @@ function showResultNotification(test) {
       window.open('https://qa.drupal.org/pifr/test/' + test.id);
     }
   }
-  notification.show();
+}
+
+function sendToPushbullet(test) {
+  console.log('calling sendToPushbullet');
+  chrome.storage.sync.get("pbat", function(items) {
+    if (items.pbat) {
+      var xhrPB = new XMLHttpRequest();
+      xhrPB.open("POST", "https://api.pushbullet.com/v2/pushes", true);
+      xhrPB.setRequestHeader("Authorization", "Bearer " + items.pbat);
+      xhrPB.setRequestHeader("Content-Type", "application/json");
+      var data = {
+        type: 'link',
+        title: test.title,
+        body: "Your test for " + test.title + " is done.",
+        url: 'https://qa.drupal.org/pifr/test/' + test.id
+      }
+      xhrPB.send(JSON.stringify(data));
+      console.log(xhrPB);
+    }
+  });
 }
