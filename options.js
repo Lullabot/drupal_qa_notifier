@@ -27,8 +27,7 @@ function save_options() {
   });
 }
 
-// Restores select box and checkbox state using the preferences
-// stored in chrome.storage.
+// Restores preference values to the state stored in chrome.storage.
 function restore_options() {
   chrome.storage.sync.get({
     enable_desktop_notifications: '',
@@ -49,17 +48,18 @@ function restore_options() {
 
     if (items.pbat) {
       // If we have an access token, go out and get their list of devices,
-      // so they can choose which devices they would like to have notified.
+      // so they can choose which device they would like to have notified.
       var xhrPB = new XMLHttpRequest();
       xhrPB.open("GET", "https://api.pushbullet.com/v2/devices", false);
       xhrPB.setRequestHeader("Authorization", "Bearer " + items.pbat);
       xhrPB.send(null);
-
       if (xhrPB.status === 200) {
         var options = '<option value="">- All Devices -</option>';
         var resp = JSON.parse(xhrPB.responseText);
         var i = 0;
 
+        // The response is a list of all their devices. As long as the device
+        // is active and pushable, we will display it here.
         for (device of resp.devices) {
           i = i + 1;
           if (device.active && device.pushable) {

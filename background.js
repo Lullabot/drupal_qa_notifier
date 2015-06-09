@@ -28,7 +28,6 @@ function onWatchdog() {
         }
 
         if (subscriptions.length > 0) {
-
           var tests = subscriptions.join('+');
           var xhr = new XMLHttpRequest();
           var time = new Date().getTime();
@@ -37,7 +36,6 @@ function onWatchdog() {
             if (xhr.readyState === 4 && typeof xhr.responseText !== "undefined") {
               try {
                 var resp = JSON.parse(xhr.responseText);
-
                 if (resp.tests && resp.tests.length) {
                   for (var i = 0; i < resp.tests.length; i++) {
                     if (resp.tests[i]['test']) {
@@ -87,16 +85,20 @@ function onWatchdog() {
 }
 
 function doNotifications(test) {
-
+  // Get all the configuration out of storage.
   chrome.storage.sync.get(null, function(items){
     var url = '';
+
+    // If the preference is to link to the issue, and we CAN link to the issue.
     if (items.link_to == 'dorg' && typeof test.dorg_link !== "undefined" && test.dorg_link.length > 0) {
       url = test.dorg_link;
     }
+    // Fall back to linking to the test.
     else {
       url = 'https://qa.drupal.org/pifr/test/' + test.id;
     }
 
+    // Show the notifications that the user has chosen.
     if (items.enable_desktop_notifications) {
       showResultNotification(test, url);
     }
