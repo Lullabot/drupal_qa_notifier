@@ -49,7 +49,7 @@ function onWatchdog() {
                         }
                         else if (Notification.permission === "granted") {
                           // If it's okay let's create a notification
-                          showResultNotification(test);
+                          doNotifications(test);
                         }
                         else if (Notification.permission !== 'denied') {
                           Notification.requestPermission(function (permission) {
@@ -60,7 +60,7 @@ function onWatchdog() {
                             }
 
                             if (permission === "granted") {
-                              showResultNotification(test);
+                              doNotifications(test);
                             }
                           });
                         }
@@ -69,7 +69,9 @@ function onWatchdog() {
                   }
                 }
               }
-              catch(e) {}
+              catch(e) {
+                console.log(e);
+              }
               finally {
                 chrome.storage.sync.set({subscriptions: item.subscriptions});
               }
@@ -82,18 +84,55 @@ function onWatchdog() {
   });
 }
 
-function showResultNotification(test) {
+function doNotifications(test) {
+  // Get all the configuration out of storage.
+  chrome.storage.sync.get(null, function(items){
+    var url = '';
+
+    // If the preference is to link to the issue, and we CAN link to the issue.
+    if (items.link_to == 'dorg' && typeof test.dorg_link !== "undefined" && test.dorg_link.length > 0) {
+      url = test.dorg_link;
+    }
+    // Fall back to linking to the test.
+    else {
+      url = 'https://qa.drupal.org/pifr/test/' + test.id;
+    }
+
+    // Show the notifications that the user has chosen.
+    if (items.enable_desktop_notifications) {
+      showResultNotification(test, url);
+    }
+    if (items.pbat) {
+      sendToPushbullet(test, url);
+    }
+  });
+}
+
+function showResultNotification(test, url) {
   var notification = new Notification(test.title, {
     body: 'Completed',
     icon: '48.png'
   });
   notification.onclick = function () {
-    if (typeof test.dorg_link !== "undefined" && test.dorg_link.length > 0) {
-      window.open(test.dorg_link);
-    }
-    else {
-      window.open('https://qa.drupal.org/pifr/test/' + test.id);
-    }
+    window.open(url);
   }
-  notification.show();
+}
+
+function sendToPushbullet(test, url) {
+  chrome.storage.sync.get(null, function(items) {
+    var xhrPB = new XMLHttpRequest();
+    xhrPB.open("POST", "https://api.pushbullet.com/v2/pushes", true);
+    xhrPB.setRequestHeader("Authorization", "Bearer " + items.pbat);
+    xhrPB.setRequestHeader("Content-Type", "application/json");
+    var data = {
+      type: 'link',
+      title: test.title,
+      body: "Your test for " + test.title + " is done.",
+      url: url
+    }
+    if (items.chosen_device) {
+      data.device_iden = items.chosen_device;
+    }
+    xhrPB.send(JSON.stringify(data));
+  });
 }

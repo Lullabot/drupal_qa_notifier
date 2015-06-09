@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Test Extension Options</title>
+  <style>
+    body: { padding: 10px; }
+
+    .form-element { margin-bottom: 1em; }
+    .form-label { font-weight: bold; margin-bottom: .25em; }
+    .description { font-style: italic; font-size: 12px; margin-top: .5em; }
+
+    #status { font-weight: bold; min-height: 1.5em; padding-top: .5em; }
+  </style>
+</head>
+
+<body>
+  <div class="form-element">
+    <div class="form-label">Link to:</div>
+    <input type="radio" id="link_to_dorg" name="link_to" value="dorg" />&nbsp;Drupal.org issue if possible<br/>
+    <input type="radio" id="link_to_pifr" name="link_to" value="pifr" />&nbsp;Always the QA/PIFR results page
+    <div class="description">Where do you prefer the notifications link? The
+      drupal.org issue link is not always available, (for example tests against
+      the entire core that are not against a particular issue) so we may fallback to the
+      pifr link sometimes.</div>
+  </div>
+
+  <div class="form-element">
+    <div class="form-label">Enable desktop notificiations?</div>
+    <input type="checkbox" value="1" name="enable_desktop_notifications" id="enable_desktop_notifications" />
+    <label for="enable_desktop_notifications" class="description">Show a native Chrome notification</label>
+  </div>
+
+  <hr />
+
+  <div class="form-element">
+    <div class="form-label">Pushbullet Access Token:</div>
+    <input type="text" name="pbat" id="pbat" />
+    <div class="description">Found on your "Account Settings" page in Pushbullet. Leave blank to disable Pushbullet functionality.
+      Close and re-open the options page after you first enter it if you would like to select a specific device to receive notifications.</div>
+  </div>
+
+  <div class="form-element">
+    <div class="form-label">Device to Notify:</div>
+    <div id="devices"><em>n/a</em></div>
+    <div class="description">You can choose to send to all your Pushbullet devices, or just one. (Sorry, Pushbullet API doesn't support multi-select.)</div>
+  </div>
+
+  <button id="save">Save</button>
+
+  <div id="status"></div>
+
+  <script src="options.js"></script>
+</body>
+</html>
