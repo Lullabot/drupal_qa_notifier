@@ -26,8 +26,9 @@ function onWatchdog() {
             subscriptions.push((prop));
           }
         }
-console.log(subscriptions);
+
         if (subscriptions.length > 0) {
+
           var tests = subscriptions.join('+');
           var xhr = new XMLHttpRequest();
           var time = new Date().getTime();
@@ -36,6 +37,7 @@ console.log(subscriptions);
             if (xhr.readyState === 4 && typeof xhr.responseText !== "undefined") {
               try {
                 var resp = JSON.parse(xhr.responseText);
+
                 if (resp.tests && resp.tests.length) {
                   for (var i = 0; i < resp.tests.length; i++) {
                     if (resp.tests[i]['test']) {
@@ -49,11 +51,7 @@ console.log(subscriptions);
                         }
                         else if (Notification.permission === "granted") {
                           // If it's okay let's create a notification
-                          console.log('granted line 52');
-                          showResultNotification(test);
-                          console.log('about to sendToPushbullet');
-                          sendToPushbullet(test);
-                          console.log('sent!');
+                          doNotifications(test);
                         }
                         else if (Notification.permission !== 'denied') {
                           Notification.requestPermission(function (permission) {
@@ -64,9 +62,7 @@ console.log(subscriptions);
                             }
 
                             if (permission === "granted") {
-                              console.log('granted line 65');
-                              showResultNotification(test);
-                              sendToPushbullet(test);
+                              doNotifications(test);
                             }
                           });
                         }
@@ -90,37 +86,51 @@ console.log(subscriptions);
   });
 }
 
-function showResultNotification(test) {
+function doNotifications(test) {
+
+  chrome.storage.sync.get(null, function(items){
+    var url = '';
+    if (items.link_to == 'dorg' && typeof test.dorg_link !== "undefined" && test.dorg_link.length > 0) {
+      url = test.dorg_link;
+    }
+    else {
+      url = 'https://qa.drupal.org/pifr/test/' + test.id;
+    }
+
+    if (items.enable_desktop_notifications) {
+      showResultNotification(test, url);
+    }
+    if (items.pbat) {
+      sendToPushbullet(test, url);
+    }
+  });
+}
+
+function showResultNotification(test, url) {
   var notification = new Notification(test.title, {
     body: 'Completed',
     icon: '48.png'
   });
   notification.onclick = function () {
-    if (typeof test.dorg_link !== "undefined" && test.dorg_link.length > 0) {
-      window.open(test.dorg_link);
-    }
-    else {
-      window.open('https://qa.drupal.org/pifr/test/' + test.id);
-    }
+    window.open(url);
   }
 }
 
-function sendToPushbullet(test) {
-  console.log('calling sendToPushbullet');
-  chrome.storage.sync.get("pbat", function(items) {
-    if (items.pbat) {
-      var xhrPB = new XMLHttpRequest();
-      xhrPB.open("POST", "https://api.pushbullet.com/v2/pushes", true);
-      xhrPB.setRequestHeader("Authorization", "Bearer " + items.pbat);
-      xhrPB.setRequestHeader("Content-Type", "application/json");
-      var data = {
-        type: 'link',
-        title: test.title,
-        body: "Your test for " + test.title + " is done.",
-        url: 'https://qa.drupal.org/pifr/test/' + test.id
-      }
-      xhrPB.send(JSON.stringify(data));
-      console.log(xhrPB);
+function sendToPushbullet(test, url) {
+  chrome.storage.sync.get(null, function(items) {
+    var xhrPB = new XMLHttpRequest();
+    xhrPB.open("POST", "https://api.pushbullet.com/v2/pushes", true);
+    xhrPB.setRequestHeader("Authorization", "Bearer " + items.pbat);
+    xhrPB.setRequestHeader("Content-Type", "application/json");
+    var data = {
+      type: 'link',
+      title: test.title,
+      body: "Your test for " + test.title + " is done.",
+      url: url
     }
+    if (items.chosen_device) {
+      data.device_iden = items.chosen_device;
+    }
+    xhrPB.send(JSON.stringify(data));
   });
 }
